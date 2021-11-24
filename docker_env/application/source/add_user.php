@@ -1,63 +1,86 @@
-<?php 
+<?php
 /* 
 1. Créer le formulaire
 2. Une fois inscrit, rediriger l'utilisateur vers sa page de profil 
     
 */
 // on verifie si le formulaire a été envoyé
-if(!empty($_POST)) {
+if (!empty($_POST)) {
     // var_dump($_POST);
     // Le formulaire a été envoyé
     // On verifie que TOUS les champs requis sont remplis
-    if(isset($_POST["email"], $_POST["mot_de_passe"])
+    if (
+        isset($_POST["email"], $_POST["mot_de_passe"])
         && !empty($_POST["email"]) && !empty($_POST["mot_de_passe"])
-    ){
+    ) {
         // Le formulaire est complet
         // Récupérer les données et les protéger (pour éviter le XSS)
-        $prenom = strip_tags(($_POST["prenom"]));
+        $_SESSION["error"] = []; // créer un espace erreur dans la session
+
+        $prenom = strip_tags(($_POST["prenom"])); // strip_tags enlève les balises HTML et PHP d'une chaine de caractères
         $nom = strip_tags(($_POST["nom"]));
-        $email = strip_tags(($_POST["email"])); // strip_tags enlève les balises HTML et PHP d'une chaine de caractères
+        $pseudo = strip_tags(($_POST["pseudo"]));
+        if (strlen($pseudo) < 5) {
+            $_SESSION["error"][] = "Le pseudo est trop court";
+        }
+        $email = strip_tags(($_POST["email"]));
+
 
         // Vérifier que l'email renseigné est bien un email
         if (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
-          die("L'adresse email est incorrecte");  
+            $_SESSION["error"][] = "L'adresse email est incorrecte";
         }
 
-        // Hasher le mot de passe : le transformer en chaine de caractères qui n'est pas déchiffrable
-        $pass = password_hash($_POST["mot_de_passe"], PASSWORD_ARGON2ID);
-        /*
+        if ($_SESSION["error"] === []) {
+
+
+            // Hasher le mot de passe : le transformer en chaine de caractères qui n'est pas déchiffrable
+            $pass = password_hash($_POST["mot_de_passe"], PASSWORD_ARGON2ID);
+            /*
         die($pass); // pour voir à quoi ressemble le mdp crypté
         */
 
-        // Ajouter ici d'autres contrôles si besoin (double email, double mot de passe, ...)
+            // Ajouter ici d'autres contrôles si besoin (double email, double mot de passe, ...)
 
-        // enregistrer en base de données
-        require_once "server_connection.php";
+            // enregistrer en base de données
+            require_once "server_connection.php";
 
-        $sql = "INSERT INTO `utilisateur`(`prenom`, `nom`, `email`, `mot_de_passe`) VALUES (:prenom, :nom, :email, '$pass')";
+            $sql = "INSERT INTO `utilisateur`(`prenom`, `nom`, `pseudo`, `email`, `mot_de_passe`) VALUES (:prenom, :nom, :pseudo, :email, '$pass')";
 
-        // préparer la requête
-        $query = $db->prepare($sql);
-        // créer des bindValue -> connecter des variables PHP à leur paramètre SQL
-        $query->bindValue(":prenom", $_POST["prenom"], PDO::PARAM_STR);
-        $query->bindValue(":nom", $_POST["nom"], PDO::PARAM_STR);
-        $query->bindValue(":email", $_POST["email"], PDO::PARAM_STR);
+            // préparer la requête
+            $query = $db->prepare($sql);
+            // créer des bindValue -> connecter des variables PHP à leur paramètre SQL
+            $query->bindValue(":prenom", $_POST["prenom"], PDO::PARAM_STR);
+            $query->bindValue(":nom", $_POST["nom"], PDO::PARAM_STR);
+            $query->bindValue(":pseudo", $_POST["pseudo"], PDO::PARAM_STR);
+            $query->bindValue(":email", $_POST["email"], PDO::PARAM_STR);
 
-        $query->execute();
-
+            $query->execute();
+        }
         // Connecter l'utilisateur 
 
-    }else{
-        die("Le formulaire est incomplet");
+    } else {
+        $_SESSION["error"] = ["Le formulaire est incomplet"];
     }
-
-
 }
-
-
 ?>
 
 <h1>Inscription</h1>
+<?php
+// Pour afficher les erreurs 
+if (isset($_SESSION["error"])) {
+    foreach ($_SESSION["error"] as $message) {
+        ?>
+    <p><?= $message ?></p>
+        <?php
+    }
+    // Une fois qu'une erreur a été affichée, il faut l'effacer
+    unset($_SESSION["error"]);
+}
+?>
+
+
+
 
 <form method="post">
     <div>
@@ -67,6 +90,10 @@ if(!empty($_POST)) {
     <div>
         <label for="nom">Votre nom</label>
         <input type="text" name="nom" id="nom">
+    </div>
+    <div>
+        <label for="pseudo">Votre pseudo</label>
+        <input type="text" name="pseudo" id="pseudo">
     </div>
     <div>
         <label for="email">Email</label>
@@ -79,4 +106,3 @@ if(!empty($_POST)) {
     <button type="submit">Je m'inscris !</button>
 
 </form>
-
