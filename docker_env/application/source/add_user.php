@@ -5,7 +5,11 @@
 */
 // On démarre la session PHP
 session_start();
-
+// Pour empêcher d'aller sur la page inscription si déjà connecté : 
+if (isset($_SESSION["utilisateur"])){
+    header("Location: profil.php");
+    exit;
+}
 
 // on verifie si le formulaire a été envoyé
 if (!empty($_POST)) {
@@ -43,7 +47,7 @@ if (!empty($_POST)) {
         die($pass); // pour voir à quoi ressemble le mdp crypté
         */
 
-            // Ajouter ici d'autres contrôles si besoin (double email, double mot de passe, ...)
+            // Ajouter ici d'autres contrôles si besoin (double email, double mot de passe, force du mot de passe, ...)
 
             // enregistrer en base de données
             require_once "server_connection.php";
@@ -62,22 +66,22 @@ if (!empty($_POST)) {
         }
 
         // Récupérer l'id du nouvel utilisateur
-        $id = $db->lastInsertId();
+        //$id = $db->lastInsertId();
 
 
         // Connecter l'utilisateur 
         
 
         // On stocke dans $_SESSION les informations de l'utilisateur
-        $_SESSION["utilisateur"] = [
+        /*$_SESSION["utilisateur"] = [
             "id" => $id,
             "pseudo" => $pseudo,
             "email" => $_POST["email"],
-            "roles" => ["ROLE_USER"]
+            //"roles" => ["ROLE_USER"]
         ];
 
         // On peut rediriger vers la page de profil
-        header("Location: profil.php");
+       // header("Location: profil.php");*/
 
     } else {
         $_SESSION["error"] = ["Le formulaire est incomplet"];

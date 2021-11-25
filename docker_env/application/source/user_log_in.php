@@ -1,6 +1,12 @@
 <?php
 // On démarre la session PHP
 session_start();
+// Pour empêcher d'aller sur la page connexion si déjà connecté : 
+if (isset($_SESSION["utilisateur"])){
+    header("Location: profil.php");
+    exit;
+}
+
 
 if (!empty($_POST)) {
     // var_dump($_POST);
@@ -42,7 +48,7 @@ if (!empty($_POST)) {
         
 
         // On stocke dans $_SESSION les informations de l'utilisateur
-        $_SESSION["user"] = [
+        $_SESSION["utilisateur"] = [
             "id" => $user["id"],
             "pseudo" => $user["username"],
             "email" => $user["email"],
