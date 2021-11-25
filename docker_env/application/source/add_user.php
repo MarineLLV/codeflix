@@ -2,8 +2,11 @@
 /* 
 1. Créer le formulaire
 2. Une fois inscrit, rediriger l'utilisateur vers sa page de profil 
-    
 */
+// On démarre la session PHP
+session_start();
+
+
 // on verifie si le formulaire a été envoyé
 if (!empty($_POST)) {
     // var_dump($_POST);
@@ -57,7 +60,24 @@ if (!empty($_POST)) {
 
             $query->execute();
         }
+
+        // Récupérer l'id du nouvel utilisateur
+        $id = $db->lastInsertId();
+
+
         // Connecter l'utilisateur 
+        
+
+        // On stocke dans $_SESSION les informations de l'utilisateur
+        $_SESSION["utilisateur"] = [
+            "id" => $id,
+            "pseudo" => $pseudo,
+            "email" => $_POST["email"],
+            "roles" => ["ROLE_USER"]
+        ];
+
+        // On peut rediriger vers la page de profil
+        header("Location: profil.php");
 
     } else {
         $_SESSION["error"] = ["Le formulaire est incomplet"];

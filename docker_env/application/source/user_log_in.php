@@ -1,4 +1,7 @@
 <?php
+// On démarre la session PHP
+session_start();
+
 if (!empty($_POST)) {
     // var_dump($_POST);
     // Le formulaire a été envoyé
@@ -23,7 +26,31 @@ if (!empty($_POST)) {
         $query->execute();
 
         $user = $query->fetch();
+
+        // Si l'utilisateur n'existe pas :
+        if (!$user) {
+            die("l'utilisateur et/ou le mot de passe est incorrect"); // ne pas donner d'indice 
+        }
+
+        // si user existant, on peut vérifier son mot de passe avec password_verify()
+        if (!password_verify($_POST["mot_de_passe"], $user["mot_de_passe"])) {
+            die("l'utilisateur et/ou le mot de passe est incorrect");
+        }
+
+        // L'utilisateur et le mot de passe sont corrects
+        // On peut connecter l'utilisateur = ouvrir la session PHP
         
+
+        // On stocke dans $_SESSION les informations de l'utilisateur
+        $_SESSION["user"] = [
+            "id" => $user["id"],
+            "pseudo" => $user["username"],
+            "email" => $user["email"],
+            "roles" => $user["roles"]
+        ];
+
+        // On peut rediriger vers la page de profil
+        header("Location: profil.php");
 
     }
 }
@@ -41,9 +68,9 @@ if (!empty($_POST)) {
 // Pour afficher les erreurs 
 if (isset($_SESSION["error"])) {
     foreach ($_SESSION["error"] as $message) {
-        ?>
-    <p><?= $message ?></p>
-        <?php
+?>
+        <p><?= $message ?></p>
+<?php
     }
     // Une fois qu'une erreur a été affichée, il faut l'effacer
     unset($_SESSION["error"]);
