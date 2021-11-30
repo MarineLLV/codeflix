@@ -1,0 +1,10 @@
+# Activer le module de réécriture
+RewriteEngine On 
+
+#Autoriser les extensions png, jpg et jpeg
+RewriteCond %{REQUEST URI} !\.(png|jpg|jpeg)$
+
+#Le dossier uploads devient interdit d'accès sauf pour les fichiers avec l'extension autorisée
+RewriteRule .*$ - [F]
+
+
